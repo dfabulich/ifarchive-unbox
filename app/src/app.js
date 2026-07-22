@@ -107,6 +107,24 @@ export default class UnboxApp {
 
         ctx.set('Cache-Control', `max-age=0`)
 
+        // Status page for uptime monitoring (e.g. StatusCake)
+        if (request_path === '/status') {
+            ctx.set('Cache-Control', 'private, no-cache, no-store')
+            const indexLoaded = !!(this.index.hash_to_path && this.index.hash_to_path.size > 0)
+            if (!indexLoaded) {
+                ctx.status = 503
+                ctx.body = {status: 'error', error: 'Index not loaded'}
+                return
+            }
+            ctx.status = 200
+            ctx.body = {
+                status: 'ok',
+                index_files: this.index.hash_to_path.size,
+                cache_entries: this.cache.lru.length,
+            }
+            return
+        }
+
         // Show the audit page
         if (request_path === '/audit/') {
             ctx.set('Cache-Control', `no-cache`)
