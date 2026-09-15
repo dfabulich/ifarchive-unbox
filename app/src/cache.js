@@ -234,7 +234,11 @@ export default class FileCache {
         }
         const file_path = this.file_path(hash, type)
         await pipeline(response.body, fs_sync.createWriteStream(file_path))
+        return this.finalize_download(hash, file_path, type)
+    }
 
+    // After a zip is on disk (downloaded or test-injected), record it in the cache and evict if needed.
+    async finalize_download(hash, file_path, type) {
         // Wrap our processing in a try-catch so that we can remove the file if it fails for any reason
         let contents, date, normalised_paths, size
         try {
